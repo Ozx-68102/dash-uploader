@@ -27,7 +27,7 @@ def configure_upload(
         be created automatically.
     use_upload_id: bool
         Determines if the uploads are put into
-        folders defined by a "upload id" (upload_id).
+        folders defined by an "upload id" (upload_id).
         If True, uploads will be put into `folder`/<upload_id>/;
         that is, every user (for example with different
         session id) will use their own folder. If False,
@@ -92,9 +92,16 @@ def decorate_server(
         The upload api endpoint to use; the url that is used
         internally for the upload component POST and GET HTTP
         requests.
+    http_request_handler: None or class
+        Used for custom configuration on the Http POST and GET requests.
+        This can be used to add validation for the HTTP requests (Important
+        if your site is public!). If None, dash_uploader.HttpRequestHandler is used.
+        If you provide a class, use a subclass of HttpRequestHandler.
+        See the documentation of dash_uploader.HttpRequestHandler for
+        more details.
     use_upload_id: bool
         Determines if the uploads are put into
-        folders defined by a "upload id" (upload_id).
+        folders defined by an "upload id" (upload_id).
         If True, uploads will be put into `folder`/<upload_id>/;
         that is, every user (for example with different
         session id) will use their own folder. If False,

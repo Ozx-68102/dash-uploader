@@ -17,6 +17,7 @@ def _create_dash_callback(callback, settings):  # pylint: disable=redefined-oute
     def wrapper(
         callbackbump,
         uploaded_filenames,
+        failed_filenames,
         total_files_count,
         uploaded_files_size,
         total_files_size,
@@ -25,7 +26,7 @@ def _create_dash_callback(callback, settings):  # pylint: disable=redefined-oute
         if not callbackbump:
             raise PreventUpdate()
 
-        uploadedfilepaths = []
+        uploaded_filepaths = []
         if uploaded_filenames is not None:
             if upload_id:
                 root_folder = Path(settings.UPLOAD_FOLDER_ROOT) / upload_id
@@ -34,14 +35,15 @@ def _create_dash_callback(callback, settings):  # pylint: disable=redefined-oute
 
             for filename in uploaded_filenames:
                 file = root_folder / filename
-                uploadedfilepaths.append(str(file))
+                uploaded_filepaths.append(str(file))
 
         status = UploadStatus(
-            uploaded_files=uploadedfilepaths,
+            uploaded_files=uploaded_filepaths,
             n_total=total_files_count,
             uploaded_size_mb=uploaded_files_size,
             total_size_mb=total_files_size,
             upload_id=upload_id,
+            failed_files=failed_filenames
         )
         return callback(status)
 
@@ -59,7 +61,7 @@ def callback(
 
     Parameters
     ----------
-    output: dash Ouput
+    output: dash Output
         The output dash component
     id: str
         The id of the du.Upload component.
@@ -86,10 +88,6 @@ def callback(
             a dash component. The filenames is either
             None or list of str containing the uploaded
             file(s).
-        output: dash.dependencies.Output
-            The dash output. For example:
-            Output('callback-output', 'children')
-
         """
         dash_callback = _create_dash_callback(
             function,

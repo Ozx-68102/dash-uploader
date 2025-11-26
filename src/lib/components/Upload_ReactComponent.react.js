@@ -36,6 +36,7 @@ export default class Upload_ReactComponent extends Component {
         progressBar: 0,
         messageStatus: '',
         uploadedFiles: [],
+        failedFileNames: [],
         isPaused: false,
         isUploading: false,
         isHovered: false,
@@ -271,6 +272,20 @@ export default class Upload_ReactComponent extends Component {
         if (this.debug) {
             console.log('fileError with flow.js! (file, errorCount)', file, errorCount)
         }
+
+        // upload State
+        const failedFiles = this.state.failedFileNames;
+        failedFiles.push(file.name);
+
+        // call Dash
+        this.setState({failedFileNames: failedFiles});
+        if (this.props.setProps) {
+            this.props.setProps({
+                dashAppCallbackBump: this.props.dashAppCallbackBump + 1,
+                failedFileNames: failedFiles
+            });
+        }
+
         if (typeof (this.props.onUploadErrorCallback) !== 'undefined') {
             this.props.onUploadErrorCallback(file, errorCount);
         } else {
@@ -349,6 +364,7 @@ export default class Upload_ReactComponent extends Component {
         this.props.setProps({
             dashAppCallbackBump: 0,
             uploadedFileNames: [],
+            failedFileNames: [],
             totalFilesCount: this.flow.files.length,
             uploadedFilesSize: 0,
             totalFilesSize: 0,
@@ -621,6 +637,11 @@ Upload_ReactComponent.propTypes = {
     uploadedFileNames: PropTypes.arrayOf(PropTypes.string),
 
     /**
+     * The names of the files that failed to upload
+     */
+    failedFileNames: PropTypes.arrayOf(PropTypes.string),
+
+    /**
      * List of allowed file types, e.g. ['jpg', 'png']
      */
     filetypes: PropTypes.arrayOf(PropTypes.string),
@@ -711,6 +732,7 @@ Upload_ReactComponent.defaultProps = {
     text: 'Click Here to Select a File',
     completedMessage: 'Complete! ',
     uploadedFileNames: [],
+    failedFileNames: [],
     filetypes: undefined,
     startButton: true,
     pauseButton: true,

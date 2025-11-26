@@ -22,6 +22,8 @@ class UploadStatus:
         Total size of files to be uploaded in Megabytes
     status.upload_id (str or None):
         The upload id used in the upload process, if any.
+    status.failed_files (list of str):
+        The list of filenames that failed to upload.
     """
 
     def __init__(
@@ -31,6 +33,7 @@ class UploadStatus:
         uploaded_size_mb,
         total_size_mb,
         upload_id=None,
+        failed_files=None
     ):
         """
         Parameters
@@ -52,14 +55,19 @@ class UploadStatus:
         self.uploaded_files = [Path(x) for x in uploaded_files]
         self.latest_file = self.uploaded_files[-1]
 
+        if failed_files is None:
+            failed_files = []
+        self.failed_files = failed_files
+        self.n_failed = len(failed_files)
+
         self.n_uploaded = len(uploaded_files)
         self.n_total = n_total
         self.upload_id = upload_id
 
-        self.is_completed = self.n_uploaded == n_total
-        if self.n_uploaded > n_total:
+        self.is_completed = (self.n_uploaded + self.n_failed) == n_total
+        if (self.n_uploaded + self.n_failed) > n_total:
             warnings.warn(
-                "Initializing UploadStatus with n_uploaded > n_total. This should not be happening"
+                f"Initializing UploadStatus with processed files ({self.n_uploaded + self.n_failed}) > n_total ({n_total}). This should not be happening"
             )
 
         self.uploaded_size_mb = uploaded_size_mb
@@ -71,8 +79,10 @@ class UploadStatus:
         vals = [
             f"latest_file = {self.latest_file}",
             f"uploaded_files = [{', '.join(str(x) for x in self.uploaded_files)}]",
+            f"failed_files = {self.failed_files}",
             f"is_completed = {self.is_completed}",
             f"n_uploaded = {self.n_uploaded}",
+            f"n_failed = {self.n_failed}",
             f"n_total = {self.n_total}",
             f"uploaded_size_mb = {self.uploaded_size_mb}",
             f"total_size_mb = {self.total_size_mb}",
