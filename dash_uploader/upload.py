@@ -57,6 +57,8 @@ def Upload(
     default_style=None,
     upload_id=None,
     max_files=1,
+    failed_files=None,
+    is_uploading=False,
 ):
     """
     du.Upload component
@@ -128,6 +130,14 @@ def Upload(
         (4) When uploading folders, note that the subdirectories
           are NOT created -> All files in the folders will
           be uploaded to the single upload folder.
+    is_uploading: bool (default: False)
+        Indicates whether the upload process is currently active.
+        Can be used as an Input in Dash callbacks to disable/enable
+        other components during upload.
+    failed_files: list of str (default: None)
+        A list of filenames that failed to upload.
+        Typically used as an Output/State in callbacks, but can be
+        initialized here if needed.
 
     Returns
     -------
@@ -170,6 +180,8 @@ def Upload(
         completeStyle=default_style,
         upload_id=str(upload_id),
         totalFilesCount=0,
+        failedFileNames=failed_files if failed_files is not None else [],
+        isUploading=is_uploading,
     )
 
     if filetypes:

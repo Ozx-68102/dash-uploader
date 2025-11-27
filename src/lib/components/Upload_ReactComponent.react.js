@@ -210,6 +210,10 @@ export default class Upload_ReactComponent extends Component {
             this.flow.removeFile(file);
         }, this);
 
+        if (this.props.setProps) {
+            this.props.setProps({isUploading: false});
+        }
+
         this.setState({
             isUploading: false,
             showEnabledButtons: false,
@@ -240,11 +244,8 @@ export default class Upload_ReactComponent extends Component {
         }
 
         file.fileName = message;
-        const uploadedFiles = this.state.uploadedFiles;
-        uploadedFiles.push(file);
-
-        const uploadedFileNames = this.props.uploadedFileNames
-        uploadedFileNames.push(file.fileName);
+        const uploadedFiles = [...this.state.uploadedFiles, file];
+        const uploadedFileNames = [...this.props.uploadedFileNames, file.fileName];
 
         if (this.props.setProps) {
             this.props.setProps({
@@ -274,8 +275,7 @@ export default class Upload_ReactComponent extends Component {
         }
 
         // upload State
-        const failedFiles = this.state.failedFileNames;
-        failedFiles.push(file.name);
+        const failedFiles = [...this.state.failedFileNames, file.name];
 
         // call Dash
         this.setState({failedFileNames: failedFiles});
@@ -368,11 +368,10 @@ export default class Upload_ReactComponent extends Component {
             totalFilesCount: this.flow.files.length,
             uploadedFilesSize: 0,
             totalFilesSize: 0,
-        })
-        this.setState({ showEnabledButtons: true })
-        this.flow.upload()
-        this.setState({ isUploading: true })
-
+            isUploading: true,
+        });
+        this.setState({ showEnabledButtons: true, isUploading: true });
+        this.flow.upload();
     }
 
     cancelUpload() {
@@ -524,6 +523,13 @@ export default class Upload_ReactComponent extends Component {
                 </div>
             </div >
         );
+    }
+
+    componentWillUnmount() {
+        if (this.flow) {
+            this.flow.cancel();
+            this.flow = null;
+        }
     }
 }
 
@@ -712,6 +718,12 @@ Upload_ReactComponent.propTypes = {
      *   MB = 1024*1024 bytes.
      */
     totalFilesSize: PropTypes.number,
+
+    /**
+     *   Whether the upload process is currently active.
+     *   True when uploading, False when idle or finished.
+     */
+    isUploading: PropTypes.bool,
 }
 
 Upload_ReactComponent.defaultProps = {
@@ -741,5 +753,6 @@ Upload_ReactComponent.defaultProps = {
     id: 'default-dash-uploader-id',
     onUploadErrorCallback: undefined,
     dashAppCallbackBump: 0,
-    upload_id: ''
+    upload_id: '',
+    isUploading: false
 };
