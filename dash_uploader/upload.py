@@ -58,6 +58,7 @@ def Upload(
     upload_id=None,
     max_files=1,
     failed_files=None,
+    text_completed_no_suffix=False,
     is_uploading=False,
 ):
     """
@@ -76,8 +77,8 @@ def Upload(
         "Ready! ", then user would see text "Ready!
         data.zip".
     text_disabled: str
-        The text to show in the upload area when the
-        the component is disabled.
+        The text to show in the upload area when the component
+        is disabled.
     cancel_button: bool
         If True, shows a cancel button.
     pause_button: bool
@@ -86,11 +87,14 @@ def Upload(
         If True, the file is not allowed to be uploaded.
     filetypes: list of str or None
         The filetypes that can be uploaded.
-        For example ['zip', 'rar'].
-        Note that this just checks the extension of the
-        filename, and user might still upload any kind
-        of file (by renaming)!
-        By default, all filetypes are accepted.
+        For example: ['zip', 'rar'] or ['.csv', '.Excel'].
+
+        Notes:
+        - Case insensitive ('zip' == 'ZIP').
+        - The leading dot is optional ('jpg' == '.jpg').
+        - This just checks the extension of the filename. Users might
+          still upload any kind of file by renaming it!
+        - By default, all filetypes are accepted.
     max_file_size: numeric
         The maximum file size in Megabytes. Optional.
         Default: 1024 (1Gb).
@@ -138,6 +142,10 @@ def Upload(
         A list of filenames that failed to upload.
         Typically used as an Output/State in callbacks, but can be
         initialized here if needed.
+    text_completed_no_suffix: bool (default: False)
+        If True, do not append the filename to the completed message.
+        Only show the text defined in 'text_completed' without appending
+        the uploaded filename.
 
     Returns
     -------
@@ -182,6 +190,7 @@ def Upload(
         totalFilesCount=0,
         failedFileNames=failed_files if failed_files is not None else [],
         isUploading=is_uploading,
+        completedMessageNoSuffix=text_completed_no_suffix,
     )
 
     if filetypes:

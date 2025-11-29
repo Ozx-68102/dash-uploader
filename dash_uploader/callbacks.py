@@ -120,6 +120,7 @@ def callback(
             [Input(id, "dashAppCallbackBump")],
             [
                 State(id, "uploadedFileNames"),
+                State(id, "failedFileNames"),
                 State(id, "totalFilesCount"),
                 State(id, "uploadedFilesSize"),
                 State(id, "totalFilesSize"),

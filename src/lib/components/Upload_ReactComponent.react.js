@@ -150,12 +150,16 @@ export default class Upload_ReactComponent extends Component {
     }
 
     checkFileExtensionIsOk = (file) => {
-        var extension = file.name.split('.').pop()
-        if (this.props.filetypes === undefined) {
-            // All filetypes are accepted
+        // All filetypes are accepted
+        if (!this.props.filetypes || this.props.filetypes.length === 0) {
             return true;
         }
-        return this.props.filetypes.includes(extension)
+
+        // Get file extension and convert to lower case
+        const extension = file.name.split('.').pop().toLowerCase();
+
+        // Check against allowed types (insensitive to case and dot
+        return this.props.filetypes.some(type => type.toLowerCase().replace(/^\./, '') === extension);
     }
 
     checkFilesAreOkayToBeUploaded = (filearray) => {
@@ -247,22 +251,21 @@ export default class Upload_ReactComponent extends Component {
         const uploadedFiles = [...this.state.uploadedFiles, file];
         const uploadedFileNames = [...this.props.uploadedFileNames, file.fileName];
 
+        const finalMessage = this.props.completedMessageNoSuffix ? this.props.completedMessage : this.props.completedMessage + file.fileName;
+
         if (this.props.setProps) {
             this.props.setProps({
                 dashAppCallbackBump: this.props.dashAppCallbackBump + 1,
                 uploadedFileNames: uploadedFileNames,
                 uploadedFilesSize: bytest_to_mb(this.flow.sizeUploaded()),
                 totalFilesSize: bytest_to_mb(this.flow.getSize()),
+                text: finalMessage
             });
         }
         this.setState({
             uploadedFiles: uploadedFiles,
-            messageStatus: this.props.completedMessage + file.fileName
+            messageStatus: finalMessage
         })
-
-        this.props.setProps({
-            text: this.props.completedMessage + file.fileName
-        });
     };
 
 
@@ -324,7 +327,7 @@ export default class Upload_ReactComponent extends Component {
     }
 
     removeTooLargeFilesFromQueue = () => {
-        var n_too_large_files = 0
+        let n_too_large_files = 0
         // Remove files that do not have correct file extension.
         const removeTheseFiles = []
         this.flow.files.forEach(function (file) {
@@ -341,7 +344,7 @@ export default class Upload_ReactComponent extends Component {
             this.flow.removeFile(file);
         }, this);
 
-        if (n_too_large_files == 1) {
+        if (n_too_large_files === 1) {
             alert('1 file could not be uploaded, as the file is too large! Maximum allowed file size is ' + bytest_to_mb(this.props.maxFileSize).toFixed(1) + 'MB')
         } else if (n_too_large_files > 1) {
             alert(n_too_large_files.toString() + ' files could not be uploaded, as the file is too large! Maximum allowed file size is ' + bytest_to_mb(this.props.maxFileSize).toFixed(1) + 'MB')
@@ -409,8 +412,13 @@ export default class Upload_ReactComponent extends Component {
     }
 
     getLabel = () => {
+        const text = this.props.text ? this.props.text : null
 
-        let text = this.props.text ? this.props.text : null
+        // Generate valid HTML accept string (e.g. ".zip,.rar")
+        let acceptString = '*';
+        if (this.props.filetypes && this.props.filetypes.length > 0) {
+            acceptString = this.props.filetypes.map(t => t.startsWith('.') ? t : `.${t}`).join(',');
+        }
 
         return <label
             style={{
@@ -434,7 +442,7 @@ export default class Upload_ReactComponent extends Component {
                 type="file"
                 className='btn'
                 name={this.props.id + '-upload'}
-                accept={this.props.filetypes || '*'}
+                accept={acceptString}
                 disabled={this.state.isUploading || this.props.disabled}
                 style={{
                     'opacity': '0',
@@ -724,6 +732,12 @@ Upload_ReactComponent.propTypes = {
      *   True when uploading, False when idle or finished.
      */
     isUploading: PropTypes.bool,
+
+    /**
+     *  If True, do not append the filename to the completed message.
+     *  Only show the text defined in 'completedMessage'.
+     */
+    completedMessageNoSuffix: PropTypes.bool,
 }
 
 Upload_ReactComponent.defaultProps = {
@@ -754,5 +768,6 @@ Upload_ReactComponent.defaultProps = {
     onUploadErrorCallback: undefined,
     dashAppCallbackBump: 0,
     upload_id: '',
-    isUploading: false
+    isUploading: false,
+    completedMessageNoSuffix: false
 };
