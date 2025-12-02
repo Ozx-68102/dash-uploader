@@ -2,7 +2,7 @@
 # The du.configure_upload can change this
 upload_api = "/API/dash-uploader"
 
-# Needed if using a proxy; when dash.Dash is used
+# Needed if using a proxy; when `dash.Dash` is used
 # with a `requests_pathname_prefix`.
 # The front-end will prefix this string to the requests
 # that are made to the proxy server

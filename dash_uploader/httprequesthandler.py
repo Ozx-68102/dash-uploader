@@ -5,8 +5,7 @@ import shutil
 import time
 import traceback
 
-from flask import request
-from flask import abort
+from flask import Flask, Request, request, abort
 
 from dash_uploader.utils import retry
 
@@ -25,40 +24,40 @@ class RequestData:
     # A helper class that contains data from the request
     # parsed into handier form.
 
-    def __init__(self, request):
+    def __init__(self, req: Request):
         """
         Parameters
         ----------
-        request: flask.request
+        req: flask.request
             The Flask request object
         """
         # Available fields: https://github.com/flowjs/flow.js
-        self.n_chunks_total = request.form.get("flowTotalChunks", type=int)
-        self.chunk_number = request.form.get("flowChunkNumber", default=1, type=int)
-        self.filename = request.form.get("flowFilename", default="error", type=str)
+        self.n_chunks_total = req.form.get("flowTotalChunks", type=int)
+        self.chunk_number = req.form.get("flowChunkNumber", default=1, type=int)
+        self.filename = req.form.get("flowFilename", default="error", type=str)
         # 'unique' identifier for the file that is being uploaded.
         # Made of the file size and file name (with relative path, if available)
-        self.unique_identifier = request.form.get(
+        self.unique_identifier = req.form.get(
             "flowIdentifier", default="error", type=str
         )
         # flowRelativePath is the flowFilename with the directory structure included
         # the path is relative to the chosen folder.
-        self.relative_path = request.form.get("flowRelativePath", default="", type=str)
+        self.relative_path = req.form.get("flowRelativePath", default="", type=str)
         if not self.relative_path:
             self.relative_path = self.filename
 
         # Get the chunk data.
         # Type of `chunk_data`: werkzeug.datastructures.FileStorage
-        self.chunk_data = request.files["file"]
+        self.chunk_data = req.files["file"]
 
-        self.upload_id = request.form.get("upload_id", default="", type=str)
+        self.upload_id = req.form.get("upload_id", default="", type=str)
 
 
 class BaseHttpRequestHandler:
 
     remove_file = staticmethod(retry(wait_time=0.35, max_time=15.0)(remove_file))
 
-    def __init__(self, server, upload_folder, use_upload_id):
+    def __init__(self, server: Flask, upload_folder: str, use_upload_id: bool):
         """
         Parameters
         ----------
@@ -68,13 +67,12 @@ class BaseHttpRequestHandler:
             The folder to use for uploads
         use_upload_id: bool
             Determines if the uploads are put into
-            folders defined by a "upload id" (upload_id).
+            folders defined by an "upload id" (upload_id).
             If True, uploads will be put into `folder`/<upload_id>/;
             that is, every user (for example with different
             session id) will use their own folder. If False,
             all files from all sessions are uploaded into
             same folder (not recommended).
-
         """
         self.server = server
         self.upload_folder = pathlib.Path(upload_folder)
@@ -83,11 +81,11 @@ class BaseHttpRequestHandler:
     def post(self):
         try:
             return self._post()
-        except Exception:
+        except Exception as e:
             logger.error(traceback.format_exc())
+            abort(500, str(e))
 
     def _post(self):
-
         r = RequestData(request)
 
         # make our temp directory
@@ -121,9 +119,8 @@ class BaseHttpRequestHandler:
 
         # combine all the chunks to create the final file
         if upload_complete:
-
             # Make sure all files are finished writing
-            # but do not wait forever..
+            # but do not wait forever...
             tried = 0
             while any(
                 [
@@ -138,26 +135,24 @@ class BaseHttpRequestHandler:
                 tried += 1
                 if tried >= 5:
                     logger.error(
-                        "Error uploading files with temporary_folder_for_file_chunks: %s.",
-                        temporary_folder_for_file_chunks,
+                        f"Error uploading files with temporary_folder_for_file_chunks: {temporary_folder_for_file_chunks}."
                     )
                     raise Exception(
-                        "Error uploading files with temporary_folder_for_file_chunks: "
-                        + temporary_folder_for_file_chunks
+                        f"Error uploading files with temporary_folder_for_file_chunks: {temporary_folder_for_file_chunks}"
                     )
                 time.sleep(1)
 
             # Make sure some other chunk didn't trigger file reconstruction
             target_file_name = os.path.join(upload_session_root, r.filename)
             if os.path.exists(target_file_name):
-                logger.info("File %s exists already. Overwriting..", target_file_name)
+                logger.info(f"File {target_file_name} exists already. Overwriting..")
                 self.remove_file(target_file_name)
 
-            with open(target_file_name, "ab") as target_file:
+            with open(target_file_name, "wb") as target_file:
                 for p in chunk_paths:
                     with open(p, "rb") as stored_chunk_file:
                         target_file.write(stored_chunk_file.read())
-            self.server.logger.debug("File saved to: %s", target_file_name)
+            self.server.logger.debug(f"File saved to: {target_file_name}")
             shutil.rmtree(temporary_folder_for_file_chunks)
 
         return r.filename
@@ -165,8 +160,9 @@ class BaseHttpRequestHandler:
     def get(self):
         try:
             return self._get()
-        except Exception:
+        except Exception as e:
             logger.error(traceback.format_exc())
+            abort(500, str(e))
 
     def _get(self):
         # flow.js uses a GET request to check if it uploaded the file already.
@@ -186,20 +182,18 @@ class BaseHttpRequestHandler:
         )
 
         # chunk path based on the parameters
-        chunk_file = os.path.join(
-            temporary_folder_for_file_chunks, get_chunk_name(r.filename, r.chunk_number)
-        )
+        chunk_file = os.path.join(temporary_folder_for_file_chunks, get_chunk_name(r.filename, r.chunk_number))
         self.server.logger.debug("Getting chunk: %s", chunk_file)
 
         if os.path.isfile(chunk_file):
             # Let flow.js know this chunk already exists
             return "OK"
         else:
-            # Let flow.js know this chunk does not exists
+            # Let flow.js know this chunk does not exist
             # and needs to be uploaded
             abort(404, "Not found")
 
-    def get_upload_session_root(self, upload_id):
+    def get_upload_session_root(self, upload_id: str):
         return (
             (self.upload_folder / upload_id)
             if self.use_upload_id
@@ -219,9 +213,9 @@ class HttpRequestHandler(BaseHttpRequestHandler):
 
     def post(self):
         self.post_before()
-        returnvalue = super().post()
+        return_value = super().post()
         self.post_after()
-        return returnvalue
+        return return_value
 
     def post_after(self):
         pass
@@ -231,9 +225,9 @@ class HttpRequestHandler(BaseHttpRequestHandler):
 
     def get(self):
         self.get_before()
-        returnvalue = super().get()
+        return_value = super().get()
         self.get_after()
-        return returnvalue
+        return return_value
 
     def get_after(self):
         pass

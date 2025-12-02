@@ -1,7 +1,8 @@
 from pathlib import Path
+from typing import Callable
 
 from dash.exceptions import PreventUpdate
-from dash.dependencies import Input, State
+from dash.dependencies import Input, Output, State
 
 import dash_uploader.settings as settings
 from dash_uploader.uploadstatus import UploadStatus
@@ -78,20 +79,20 @@ def callback(
 
     """
 
-    def add_callback(function):
+    def add_callback(function: Callable):
         """
         Parameters
         ---------
         function: callable
             Function that receivers one argument,
             filenames and returns one argument,
-            a dash component. The filenames is either
+            a dash component. The filenames are either
             None or list of str containing the uploaded
             file(s).
         """
         dash_callback = _create_dash_callback(
             function,
-            settings,
+            settings
         )
 
         if not hasattr(settings, "app"):
@@ -109,7 +110,7 @@ def callback(
         # Input: Change in the props will trigger callback.
         #     Whenever 'this.props.setProps' is called on the JS side,
         #     (dash specific special prop that is passed to every
-        #     component of the dash app), a HTTP request is used to
+        #     component of the dash app), an HTTP request is used to
         #     trigger a change in the property/attribute of a dash
         #     python component.
         # State: Pass along extra values without firing the callbacks.

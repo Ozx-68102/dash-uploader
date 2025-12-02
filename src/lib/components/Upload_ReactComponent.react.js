@@ -298,7 +298,7 @@ export default class Upload_ReactComponent extends Component {
     };
 
     removeUnsupportedFileTypesFromQueue = () => {
-        var n_bad_file_extension = 0
+        let n_bad_file_extension = 0
         // Remove files that do not have correct file extension.
         const removeTheseFiles = []
         this.flow.files.forEach(function (file) {
@@ -319,10 +319,10 @@ export default class Upload_ReactComponent extends Component {
         }, this);
 
 
-        if (n_bad_file_extension == 1) {
-            alert('1 file could not be uploaded, as the file extension is not supported! Allowed filetypes are: [' + this.props.filetypes.join(', ') + ']')
+        if (n_bad_file_extension === 1) {
+            alert('1 file could not be uploaded, as the file extension is not supported! Allowed filetypes are: [' + this.props.filetypes.join(', ') + ']');
         } else if (n_bad_file_extension > 1) {
-            alert(n_bad_file_extension.toString() + ' files could not be uploaded, as the file extension is not supported! Allowed filetypes are: [' + this.props.filetypes.join(', ') + ']')
+            alert(n_bad_file_extension.toString() + ' files could not be uploaded, as the file extension is not supported! Allowed filetypes are: [' + this.props.filetypes.join(', ') + ']');
         }
     }
 

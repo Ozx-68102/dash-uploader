@@ -30,42 +30,44 @@ def update_upload_api(requests_pathname_prefix, upload_api):
     )
 
 
-def combine(overiding_dict, base_dict):
+def combine(overriding_dict, base_dict):
     """Combining two dictionaries without modifying them.
     This is a private method, and should not be exposed to users.
     """
-    if overiding_dict is None:
+    if overriding_dict is None:
         return dict(base_dict)
-    return {**base_dict, **overiding_dict}
+    return {**base_dict, **overriding_dict}
 
 
 # Implemented as function, but still uppercase.
 # This is because subclassing the Dash-auto-generated
 # "Upload from Upload.py" will give some errors
 def Upload(
-    id="dash-uploader",
-    text="Drag and Drop Here to upload!",
-    text_completed="Uploaded: ",
-    text_disabled="The uploader is disabled.",
-    cancel_button=True,
-    pause_button=False,
-    disabled=False,
-    filetypes=None,
-    max_file_size=1024,
-    max_total_size=5 * 1024,
-    chunk_size=1,
-    default_style=None,
-    upload_id=None,
-    max_files=1,
-    failed_files=None,
-    text_completed_no_suffix=False,
-    is_uploading=False,
+    id: str="dash-uploader",
+    text: str="Drag and Drop Here to upload!",
+    text_completed: str="Uploaded: ",
+    text_completed_no_suffix: bool=False,
+    text_disabled: str="The uploader is disabled.",
+    cancel_button: bool=True,
+    pause_button: bool=False,
+    disabled: bool=False,
+    filetypes: list[str] | None=None,
+    max_file_size: int=1024,
+    max_total_size: int=5 * 1024,
+    chunk_size: int=1,
+    default_style: dict[str, str] | None=None,
+    upload_id: str | None=None,
+    max_files: int=1,
+    failed_files: list[str]=None,
+    is_uploading: bool=False,
 ):
     """
     du.Upload component
 
     Parameters
     ----------
+    id: str
+        The id of the du.Upload component.
     text: str
         The text to show in the upload "Drag
         and Drop" area. Optional.
@@ -76,6 +78,10 @@ def Upload(
         uploaded "data.zip" and `text_completed` is
         "Ready! ", then user would see text "Ready!
         data.zip".
+    text_completed_no_suffix: bool (default: False)
+        If True, do not append the filename to the completed message.
+        Only show the text defined in 'text_completed' without appending
+        the uploaded filename.
     text_disabled: str
         The text to show in the upload area when the component
         is disabled.
@@ -134,18 +140,14 @@ def Upload(
         (4) When uploading folders, note that the subdirectories
           are NOT created -> All files in the folders will
           be uploaded to the single upload folder.
-    is_uploading: bool (default: False)
-        Indicates whether the upload process is currently active.
-        Can be used as an Input in Dash callbacks to disable/enable
-        other components during upload.
     failed_files: list of str (default: None)
         A list of filenames that failed to upload.
         Typically used as an Output/State in callbacks, but can be
         initialized here if needed.
-    text_completed_no_suffix: bool (default: False)
-        If True, do not append the filename to the completed message.
-        Only show the text defined in 'text_completed' without appending
-        the uploaded filename.
+    is_uploading: bool (default: False)
+        Indicates whether the upload process is currently active.
+        Can be used as an Input in Dash callbacks to disable/enable
+        other components during upload.
 
     Returns
     -------

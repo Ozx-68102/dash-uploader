@@ -24,7 +24,7 @@ setup(
     description=package.get("description", package_name),
     long_description=long_description,
     long_description_content_type="text/markdown",
-    install_requires=["dash>=1.1.0", "packaging>= 21.0"],
+    install_requires=["dash>=1.1.0", "packaging>= 21.0", "Werkzeug<3.1.4"],
     extras_require={
         "dev": [
             "pyyaml~=6.0",  # building with dash-generate-components
@@ -41,7 +41,7 @@ setup(
             # to update/downgrade the chromedriver binary.
             # Needs: import chromedriver_binary to the top of your test script.
             "chromedriver-binary",
-            "Werkzeug~=2.0.3",
+            "Werkzeug<3.1.4",
         ]
     },
     classifiers=[

@@ -9,7 +9,7 @@ class UploadStatus:
     status.latest_file (pathlib.Path):
         The full file path to the file that has been latest uploaded
     status.uploaded_files (list of pathlib.Path):
-        The list of full file paths to all of the uploaded files. (uploaded in this session)
+        The list of full file paths to all the uploaded files. (uploaded in this session)
     status.is_completed (bool):
         True if all the files have been uploaded
     status.n_uploaded (int):
@@ -40,8 +40,6 @@ class UploadStatus:
         ---------
         uploaded_files: list of str
             The uploaded files from first to latest
-        n_uploaded: int
-            The number of files already uploaded in this session
         n_total (int):
             The number of files to be uploaded
         uploaded_size_mb (float):
