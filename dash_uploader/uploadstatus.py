@@ -11,7 +11,9 @@ class UploadStatus:
     status.uploaded_files (list of pathlib.Path):
         The list of full file paths to all the uploaded files. (uploaded in this session)
     status.is_completed (bool):
-        True if all the files have been uploaded
+        True if all the files have been uploaded and not cancelled
+    status.is_cancelled (bool):
+        True if the upload was cancelled by the user
     status.n_uploaded (int):
         The number of files already uploaded in this session
     status.n_total (int):
@@ -33,7 +35,8 @@ class UploadStatus:
         uploaded_size_mb,
         total_size_mb,
         upload_id=None,
-        failed_files=None
+        failed_files=None,
+        is_cancelled=False
     ):
         """
         Parameters
@@ -48,10 +51,14 @@ class UploadStatus:
             The size of all files to be uploaded
         upload_id: None or str
             The upload id used.
+        failed_files: list of str
+            The list of filenames that failed to upload.
+        is_cancelled: bool
+            Whether the upload was cancelled by the user.
         """
 
         self.uploaded_files = [Path(x) for x in uploaded_files]
-        self.latest_file = self.uploaded_files[-1]
+        self.latest_file = self.uploaded_files[-1] if uploaded_files else None
 
         if failed_files is None:
             failed_files = []
@@ -61,8 +68,9 @@ class UploadStatus:
         self.n_uploaded = len(uploaded_files)
         self.n_total = n_total
         self.upload_id = upload_id
+        self.is_cancelled = is_cancelled
 
-        self.is_completed = (self.n_uploaded + self.n_failed) == n_total
+        self.is_completed = (self.n_uploaded + self.n_failed) == n_total and not is_cancelled
         if (self.n_uploaded + self.n_failed) > n_total:
             warnings.warn(
                 f"Initializing UploadStatus with processed files ({self.n_uploaded + self.n_failed}) > n_total ({n_total}). This should not be happening"
@@ -79,6 +87,7 @@ class UploadStatus:
             f"uploaded_files = [{', '.join(str(x) for x in self.uploaded_files)}]",
             f"failed_files = {self.failed_files}",
             f"is_completed = {self.is_completed}",
+            f"is_cancelled = {self.is_cancelled}",
             f"n_uploaded = {self.n_uploaded}",
             f"n_failed = {self.n_failed}",
             f"n_total = {self.n_total}",

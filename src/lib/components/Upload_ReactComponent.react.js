@@ -42,7 +42,8 @@ export default class Upload_ReactComponent extends Component {
         isHovered: false,
         isComplete: false,
         showEnabledButtons: false,
-        currentFile: ''
+        currentFile: '',
+        isCancelled: false
     }
 
     constructor(props) {
@@ -372,6 +373,7 @@ export default class Upload_ReactComponent extends Component {
             uploadedFilesSize: 0,
             totalFilesSize: 0,
             isUploading: true,
+            isCancelled: false,
         });
         this.setState({ showEnabledButtons: true, isUploading: true });
         this.flow.upload();
@@ -380,7 +382,15 @@ export default class Upload_ReactComponent extends Component {
     cancelUpload() {
         this.flow.cancel();
         this.resetBuilder();
-        this.setState({ isUploading: false })
+        this.setState({ isUploading: false });
+
+        // Send cancel signal to Dash
+        if (this.props.setProps) {
+            this.props.setProps({
+                dashAppCallbackBump: this.props.dashAppCallbackBump + 1,
+                isCancelled: true
+            });
+        }
     }
 
     pauseUpload() {
@@ -734,6 +744,12 @@ Upload_ReactComponent.propTypes = {
     isUploading: PropTypes.bool,
 
     /**
+     *   Whether the upload was cancelled by the user.
+     *   Set to true when cancel button is clicked.
+     */
+    isCancelled: PropTypes.bool,
+
+    /**
      *  If True, do not append the filename to the completed message.
      *  Only show the text defined in 'completedMessage'.
      */
@@ -769,5 +785,6 @@ Upload_ReactComponent.defaultProps = {
     dashAppCallbackBump: 0,
     upload_id: '',
     isUploading: false,
+    isCancelled: false,
     completedMessageNoSuffix: false
 };

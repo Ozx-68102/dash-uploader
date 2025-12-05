@@ -59,7 +59,6 @@ def Upload(
     upload_id: str | None=None,
     max_files: int=1,
     failed_files: list[str]=None,
-    is_uploading: bool=False,
 ):
     """
     du.Upload component
@@ -144,10 +143,6 @@ def Upload(
         A list of filenames that failed to upload.
         Typically used as an Output/State in callbacks, but can be
         initialized here if needed.
-    is_uploading: bool (default: False)
-        Indicates whether the upload process is currently active.
-        Can be used as an Input in Dash callbacks to disable/enable
-        other components during upload.
 
     Returns
     -------
@@ -191,7 +186,6 @@ def Upload(
         upload_id=str(upload_id),
         totalFilesCount=0,
         failedFileNames=failed_files if failed_files is not None else [],
-        isUploading=is_uploading,
         completedMessageNoSuffix=text_completed_no_suffix,
     )
 

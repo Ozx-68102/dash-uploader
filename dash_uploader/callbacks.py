@@ -23,6 +23,7 @@ def _create_dash_callback(callback, settings):  # pylint: disable=redefined-oute
         uploaded_files_size,
         total_files_size,
         upload_id,
+        is_cancelled,
     ):
         if not callbackbump:
             raise PreventUpdate()
@@ -44,7 +45,8 @@ def _create_dash_callback(callback, settings):  # pylint: disable=redefined-oute
             uploaded_size_mb=uploaded_files_size,
             total_size_mb=total_files_size,
             upload_id=upload_id,
-            failed_files=failed_filenames
+            failed_files=failed_filenames,
+            is_cancelled=is_cancelled
         )
         return callback(status)
 
@@ -116,7 +118,7 @@ def callback(
         # State: Pass along extra values without firing the callbacks.
         #
         # See also: https://dash.plotly.com/basic-callbacks
-        dash_callback = settings.app.callback(
+        settings.app.callback(
             output,
             [Input(id, "dashAppCallbackBump")],
             [
@@ -126,6 +128,7 @@ def callback(
                 State(id, "uploadedFilesSize"),
                 State(id, "totalFilesSize"),
                 State(id, "upload_id"),
+                State(id, "isCancelled"),
             ],
             **kwargs
         )(dash_callback)
