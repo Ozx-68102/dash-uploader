@@ -1,4 +1,12 @@
+## Fork Repo Archived
+
+--------
+
+> **Status**: This fork containing `fix1-3` is frozen.  
+> **Upgrade Path**: Please switch to the spiritual successor **[dash-uploader-uppy5](https://github.com/Ozx-68102/dash-uploader-uppy5)**, which is a modernized evolution that replaces the legacy `flow.js` / `Resumable.js` frontend with **Uppy 5 (React + TS)** and **Streaming Uploads**, while retaining the proven Python architecture of the original project.
+
 ## 🚨 dash-uploader is archived 2025-07-19. See: [#153](https://github.com/fohrloop/dash-uploader/issues/153)
+
 --------
 
 ![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/fohrloop/dash-uploader)&nbsp;![PyPI](https://img.shields.io/pypi/v/dash-uploader)&nbsp;![PyPI - Downloads](https://img.shields.io/pypi/dm/dash-uploader)&nbsp;![GitHub](https://img.shields.io/github/license/fohrloop/dash-uploader)
